@@ -5,12 +5,29 @@
     <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
+    <div id="global-score-container">
+        High Score: <span id="global-score-value">0</span> (<span id="global-score-name">---</span>)
+    </div>
+
     <div class="container">
         <h1>2048 Game</h1>
         <div id="grid-container"></div>
         <div id="score">Score: <span id="score-value">0</span></div>
         <button id="restart-button">Restart</button>
     </div>
+
+    <!-- Game Over Modal -->
+    <div id="game-over-modal" class="modal">
+        <div class="modal-content">
+            <h2>Game Over!</h2>
+            <p>Your final score: <span id="final-score"></span></p>
+            <p>Enter your initials (3 letters):</p>
+            <input type="text" id="initials-input" maxlength="3" placeholder="ABC" />
+            <button id="submit-score-button">Submit</button>
+            <button id="close-modal-button">Close</button>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
