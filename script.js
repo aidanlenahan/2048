@@ -5,6 +5,8 @@ const initialTileCount = 2;
 // Game state
 let board = [];
 let score = 0;
+let globalScore = 0;
+let globalName = "---";
 
 // Initialize game
 function initGame() {
@@ -13,13 +15,30 @@ function initGame() {
     updateScore();
     addInitialTiles();
     renderBoard();
+    fetchGlobalScore();
+}
+
+// Fetch global score from scores.json
+async function fetchGlobalScore() {
+    try {
+        const response = await fetch("scores.json?cachebuster=" + Date.now());
+        const data = await response.json();
+        globalScore = data.topScore;
+        globalName = data.player;
+        updateGlobalScoreDisplay();
+    } catch (err) {
+        console.error("Could not load global score:", err);
+    }
+}
+
+function updateGlobalScoreDisplay() {
+    document.getElementById("global-score-value").textContent = globalScore;
+    document.getElementById("global-score-name").textContent = globalName;
 }
 
 // Add initial tiles
 function addInitialTiles() {
-    for (let i = 0; i < initialTileCount; i++) {
-        addRandomTile();
-    }
+    for (let i = 0; i < initialTileCount; i++) addRandomTile();
 }
 
 // Add random tile (2 or 4)
@@ -50,7 +69,6 @@ function renderBoard() {
             tile.textContent = value === 0 ? "" : value;
             tile.style.backgroundColor = getTileColor(value);
 
-            // Smooth animation for merging
             if (tile.textContent !== "" && tile.classList) {
                 tile.classList.add("appear");
                 setTimeout(() => tile.classList.remove("appear"), 150);
@@ -88,25 +106,17 @@ function updateScore() {
 document.addEventListener("keydown", (event) => {
     let moved = false;
     switch (event.key) {
-        case "ArrowUp":
-            moved = moveTilesUp();
-            break;
-        case "ArrowDown":
-            moved = moveTilesDown();
-            break;
-        case "ArrowLeft":
-            moved = moveTilesLeft();
-            break;
-        case "ArrowRight":
-            moved = moveTilesRight();
-            break;
+        case "ArrowUp": moved = moveTilesUp(); break;
+        case "ArrowDown": moved = moveTilesDown(); break;
+        case "ArrowLeft": moved = moveTilesLeft(); break;
+        case "ArrowRight": moved = moveTilesRight(); break;
     }
 
     if (moved) {
         addRandomTile();
         renderBoard();
         if (!canMove()) {
-            setTimeout(() => alert("Game Over! Final Score: " + score), 100);
+            setTimeout(showGameOverModal, 100);
         }
     }
 });
@@ -120,14 +130,14 @@ function combine(row) {
     for (let i = 0; i < gridSize - 1; i++) {
         if (row[i] !== 0 && row[i] === row[i + 1]) {
             row[i] *= 2;
-            score += row[i]; // scoring logic: add combined tile value
+            score += row[i];
             row[i + 1] = 0;
         }
     }
     return row;
 }
 
-// Move left
+// Move functions
 function moveTilesLeft() {
     let moved = false;
     for (let row = 0; row < gridSize; row++) {
@@ -142,7 +152,6 @@ function moveTilesLeft() {
     return moved;
 }
 
-// Move right
 function moveTilesRight() {
     let moved = false;
     for (let row = 0; row < gridSize; row++) {
@@ -158,7 +167,6 @@ function moveTilesRight() {
     return moved;
 }
 
-// Move up
 function moveTilesUp() {
     let moved = false;
     for (let col = 0; col < gridSize; col++) {
@@ -175,7 +183,6 @@ function moveTilesUp() {
     return moved;
 }
 
-// Move down
 function moveTilesDown() {
     let moved = false;
     for (let col = 0; col < gridSize; col++) {
@@ -206,9 +213,41 @@ function canMove() {
 }
 
 // Restart button
-document.getElementById("restart-button").addEventListener("click", () => {
-    initGame();
-});
+document.getElementById("restart-button").addEventListener("click", initGame);
+
+// Game Over Modal
+function showGameOverModal() {
+    document.getElementById("final-score").textContent = score;
+    const modal = document.getElementById("game-over-modal");
+    modal.style.display = "flex";
+
+    document.getElementById("submit-score-button").onclick = () => {
+        const initials = document.getElementById("initials-input").value.toUpperCase();
+        if (initials.length === 3) {
+            modal.style.display = "none";
+            if (score > globalScore) {
+                updateGlobalScore(initials, score);
+            }
+            initGame();
+        } else {
+            alert("Please enter 3 letters.");
+        }
+    };
+
+    document.getElementById("close-modal-button").onclick = () => {
+        modal.style.display = "none";
+        initGame();
+    };
+}
+
+// Simulate GitHub update (local only right now)
+function updateGlobalScore(initials, newScore) {
+    globalScore = newScore;
+    globalName = initials;
+    updateGlobalScoreDisplay();
+    console.log("Pretending to update scores.json:", { player: initials, topScore: newScore });
+    // Later: GitHub Action/API call here
+}
 
 // Start game
 initGame();
