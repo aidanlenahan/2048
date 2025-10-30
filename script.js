@@ -249,5 +249,16 @@ function updateGlobalScore(initials, newScore) {
     // Later: GitHub Action/API call here
 }
 
+async function fetchGlobalHighScore() {
+    const resp = await fetch('https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/highscore.json');
+    const data = await resp.json();
+    document.getElementById('global-score').textContent = `Global: ${data.name} - ${data.score}`;
+}
+
+// Call this once at page load
+fetchGlobalHighScore();
+
 // Start game
 initGame();
+
+
