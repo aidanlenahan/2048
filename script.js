@@ -32,8 +32,15 @@ async function fetchGlobalScore() {
 }
 
 function updateGlobalScoreDisplay() {
-    document.getElementById("global-score-value").textContent = globalScore;
-    document.getElementById("global-score-name").textContent = globalName;
+    const valEl = document.getElementById("global-score-value");
+    const nameEl = document.getElementById("global-score-name");
+    if (valEl && nameEl) {
+        valEl.textContent = globalScore;
+        nameEl.textContent = globalName;
+    } else {
+        const container = document.getElementById("global-score");
+        if (container) container.textContent = `${globalName} - ${globalScore}`;
+    }
 }
 
 // Add initial tiles
@@ -136,6 +143,12 @@ function cheat(value, x, y) {
 
     board[row][col] = value;
     renderBoard();
+}
+
+// Make sure cheat is accessible from DevTools
+if (typeof window !== 'undefined') {
+    window.cheat = cheat;
+    try { console.info('cheat() is exposed on window'); } catch (e) {}
 }
 
 // Key controls
@@ -286,9 +299,15 @@ function updateGlobalScore(initials, newScore) {
 }
 
 async function fetchGlobalHighScore() {
-    const resp = await fetch('https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/highscore.json');
-    const data = await resp.json();
-    document.getElementById('global-score').textContent = `Global: ${data.name} - ${data.score}`;
+    try {
+        const resp = await fetch('highscore.json');
+        const data = await resp.json();
+        const container = document.getElementById('global-score');
+        if (container) container.textContent = `Global: ${data.name} - ${data.score}`;
+    } catch (err) {
+        // ignore errors; optional file may not exist
+        console.warn('Could not fetch highscore.json:', err);
+    }
 }
 
 // Call this once at page load
