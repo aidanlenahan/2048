@@ -28,5 +28,25 @@
     </div>
 
     <script src="script.js"></script>
+
+    <!-- Ensure cheat is exposed to DevTools: poll for the cheat function and attach it to window when available -->
+    <script>
+    (function(){
+      if (typeof window.cheat === 'function') return;
+      let tries = 0;
+      const maxTries = 100; // ~10 seconds
+      const pollInterval = 100;
+      const interval = setInterval(function(){
+        if (typeof window.cheat === 'function') { clearInterval(interval); return; }
+        try {
+          if (typeof cheat === 'function') { window.cheat = cheat; console.info('cheat() exposed to window'); clearInterval(interval); return; }
+        } catch (e) {
+          // cheat not defined yet
+        }
+        tries++;
+        if (tries > maxTries) { clearInterval(interval); console.warn('cheat() was not found on the page.'); }
+      }, pollInterval);
+    })();
+    </script>
 </body>
 </html>
