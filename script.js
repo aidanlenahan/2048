@@ -102,6 +102,42 @@ function updateScore() {
     document.getElementById("score-value").textContent = score;
 }
 
+// Cheat function
+// Usage from browser console: cheat(value, x, y)
+// - value: must be one of [2,4,8,16,...,32768]
+// - x: lateral distance from bottom-left corner (0..3), 0 is left
+// - y: vertical distance from bottom-left corner (0..3), 0 is bottom
+// Example: cheat(32,0,3) -> places 32 at top-left
+function cheat(value, x, y) {
+    const allowedValues = [
+        2, 4, 8, 16, 32, 64, 128, 256, 512,
+        1024, 2048, 4096, 8192, 16384, 32768
+    ];
+
+    // Validate value
+    if (!Number.isInteger(value)) {
+        throw new Error("The tile value must be an integer.");
+    }
+    if (!allowedValues.includes(value)) {
+        throw new Error("Invalid tile value. Must be a multiple of 2 (power-of-two) between 2 and 32768.");
+    }
+
+    // Validate coordinates
+    if (!Number.isInteger(x) || !Number.isInteger(y)) {
+        throw new Error("Coordinates x and y must be integers between 0 and 3.");
+    }
+    if (x < 0 || x > gridSize - 1 || y < 0 || y > gridSize - 1) {
+        throw new Error("Coordinates out of range. x and y must be between 0 and 3 (inclusive).");
+    }
+
+    // Convert (x,y) from bottom-left origin to board indices (row, col)
+    const row = gridSize - 1 - y;
+    const col = x;
+
+    board[row][col] = value;
+    renderBoard();
+}
+
 // Key controls
 document.addEventListener("keydown", (event) => {
     let moved = false;
@@ -260,5 +296,3 @@ fetchGlobalHighScore();
 
 // Start game
 initGame();
-
-
